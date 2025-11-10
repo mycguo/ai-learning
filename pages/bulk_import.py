@@ -5,6 +5,7 @@ from typing import List
 from pages.app_admin import get_vector_store, get_text_chunks
 from utils.content_processor import process_urls_for_ingestion, chunk_documents
 from utils.duplicate_detector import detect_duplicate_urls
+from utils.auth import require_login, show_user_info
 from langchain.docstore.document import Document
 
 # Pre-defined categories
@@ -24,6 +25,13 @@ CATEGORIES = [
 ]
 
 def main():
+    # Check authentication
+    if not require_login("Bulk URL Import"):
+        return
+    
+    # Show user info in sidebar
+    show_user_info()
+    
     st.title("📚 Bulk URL Import")
     st.markdown("Import multiple URLs at once to build your AI learning repository")
     

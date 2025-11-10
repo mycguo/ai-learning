@@ -3,6 +3,8 @@ import streamlit as st
 from simple_vector_store import SimpleVectorStore as MilvusVectorStore
 from typing import List
 from langchain.docstore.document import Document
+from utils.auth import require_login, show_user_info
+from utils.user_store import get_user_store_path
 
 # Pre-defined categories
 CATEGORIES = [
@@ -28,6 +30,13 @@ def get_unique_values_from_store(store: MilvusVectorStore, field: str) -> List[s
     return []
 
 def main():
+    # Check authentication
+    if not require_login("Content Browser"):
+        return
+    
+    # Show user info in sidebar
+    show_user_info()
+    
     st.title("🔍 Content Browser")
     st.markdown("Browse and search your AI learning repository")
     
@@ -67,7 +76,9 @@ def main():
         else:
             with st.spinner("Searching..."):
                 try:
-                    vector_store = MilvusVectorStore(store_path="./vector_store_personal_assistant")
+                    # Use user-specific vector store
+                    user_store_path = get_user_store_path("./vector_store")
+                    vector_store = MilvusVectorStore(store_path=user_store_path)
                     
                     # Perform search
                     results = vector_store.similarity_search(search_query, k=num_results)
@@ -152,8 +163,9 @@ def main():
     if st.button("Browse Category"):
         with st.spinner(f"Loading content from {browse_category}..."):
             try:
-                # Use a generic query to get results, then filter
-                vector_store = MilvusVectorStore(store_path="./vector_store_personal_assistant")
+                # Use user-specific vector store
+                user_store_path = get_user_store_path("./vector_store")
+                vector_store = MilvusVectorStore(store_path=user_store_path)
                 
                 # Get some results with a generic query
                 results = vector_store.similarity_search(browse_category.lower(), k=20)

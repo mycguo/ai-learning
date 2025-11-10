@@ -12,6 +12,8 @@ A comprehensive RAG-based learning repository for managing AI/ML learning materi
 - 🎥 **Multimedia**: Audio and video transcription support
 - 🏷️ **Categorization**: Pre-defined categories for AI/ML topics
 - 🔗 **Learning Paths**: Organize content into learning paths
+- 👤 **Per-User Storage**: Each user has their own isolated vector database
+- 🔐 **Authentication**: Secure access with user authentication
 
 ## Quick Start
 

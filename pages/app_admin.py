@@ -20,6 +20,8 @@ import requests
 from bs4 import BeautifulSoup
 from webcrawer import WebCrawler
 import yt_dlp as youtube_dl
+from utils.auth import require_login, show_user_info
+from utils.user_store import get_user_store_path, get_user_collection_name
 
 #configuring the google api key
 genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
@@ -157,14 +159,22 @@ def get_text_chunks(text):
     chunks = splitter.split_text(text)
     return chunks   
 
-def _load_vector_store(collection_name="personal_assistant"):
-    """Load the vector store."""
-    try:
+def _load_vector_store(collection_name=None):
+    """Load the user-specific vector store.
+    
+    Args:
+        collection_name: Optional collection name (if None, uses user-specific name)
+    """
+    # Use user-specific store path
+    if collection_name is None:
+        store_path = get_user_store_path("./vector_store")
+    else:
         store_path = f"./vector_store_{collection_name}"
+    
+    try:
         return MilvusVectorStore(store_path=store_path)
     except Exception as e:
         print(f"Error loading vector store: {e}. Creating new store.")
-        store_path = f"./vector_store_{collection_name}"
         return MilvusVectorStore.from_texts(
             texts=get_text_chunks("Loading some documents first"),
             store_path=store_path
@@ -249,6 +259,13 @@ def get_urls(url):
 
 
 def main():
+    # Check authentication
+    if not require_login("Admin - Document Management"):
+        return
+    
+    # Show user info in sidebar
+    show_user_info()
+    
     st.title("Knowledge Assistant")
     st.header("Adding Documents to your knowledge base")
     st.write("Upload some documents to get started")

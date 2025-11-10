@@ -10,6 +10,8 @@ from pages.app_admin import get_vector_store, get_text_chunks
 from langchain.chains.combine_documents import create_stuff_documents_chain
 import boto3
 from langchain_nvidia_ai_endpoints import ChatNVIDIA
+from utils.auth import require_login, show_user_info
+from utils.user_store import get_user_store_path
 
 
 genai.configure(api_key=os.getenv("GENAI_API_KEY"))
@@ -44,7 +46,9 @@ def get_chat_chain():
     return chain
 
 def user_input(user_question):
-    vector_store = MilvusVectorStore(store_path="./vector_store_personal_assistant")
+    # Use user-specific vector store
+    user_store_path = get_user_store_path("./vector_store")
+    vector_store = MilvusVectorStore(store_path=user_store_path)
     docs = vector_store.similarity_search(user_question)
 
     chain = get_chat_chain()
@@ -82,6 +86,13 @@ def download_faiss_from_s3():
     print("Milvus uses its own persistence. Migration from FAISS can be done if needed.")
 
 def main():
+    # Check authentication
+    if not require_login("AI Learning Repository"):
+        return
+    
+    # Show user info in sidebar
+    show_user_info()
+    
     st.title("🤖 AI Learning Repository")
     st.header("Your Personal AI Learning Knowledge Base")
     st.markdown("""
@@ -93,7 +104,7 @@ def main():
     Use the sidebar to navigate to different sections.
     """)
 
-    # fix the empty vector store issue
+    # fix the empty vector store issue - use user-specific store
     get_vector_store(get_text_chunks("Loading some documents to build your knowledge base"))
 
     st.markdown("---")

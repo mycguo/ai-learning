@@ -3,6 +3,7 @@ import streamlit as st
 from pages.app_admin import get_vector_store, get_text_chunks
 from utils.content_processor import process_note_for_ingestion, chunk_documents
 from utils.metadata_extractor import create_metadata
+from utils.auth import require_login, show_user_info
 
 # Pre-defined categories
 CATEGORIES = [
@@ -76,6 +77,13 @@ NOTE_TEMPLATES = {
 }
 
 def main():
+    # Check authentication
+    if not require_login("Notes Manager"):
+        return
+    
+    # Show user info in sidebar
+    show_user_info()
+    
     st.title("📝 Notes Manager")
     st.markdown("Add and manage your learning notes")
     

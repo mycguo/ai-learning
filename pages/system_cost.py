@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 import time
 import json
 import streamlit as st
+from utils.auth import require_login, show_user_info
 
 
 # Reusable function for retrieving paginated data from the API
@@ -246,6 +247,13 @@ def plot_cost():
         st.warning("No cost data available to plot.")
 
 def main():
+    # Check authentication
+    if not require_login("System Cost"):
+        return
+    
+    # Show user info in sidebar
+    show_user_info()
+    
     st.title("Showing Cost of the System")
     plot_cost()
 
